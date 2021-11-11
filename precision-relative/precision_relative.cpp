@@ -50,8 +50,8 @@ void calc_precision_diff_helper(tnum_t t1, tnum_t t2)
 	tnum_t abs_res_1 = bitwise_mul(t1, t2);
 	tnum_t abs_res_2 = our_mul(t1, t2);
 #else
-       std::cerr << "Tnum operation not '-D' defined at compile time. Exiting." << std::endl;
-       exit(0) ;
+	std::cerr << "Tnum operation not '-D' defined at compile time. Exiting." << std::endl;
+	exit(0) ;
 #endif
 
 	abs_res_1.value = abs_res_1.value & ((1ULL << bitvec_width) - 1);
