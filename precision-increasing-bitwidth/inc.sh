@@ -1,15 +1,15 @@
 #!/bin/bash
 
+rm -rf *.log
 make --silent clean 
 make --silent precision_increasing_bitwidth && 
 
-printf -- "bitwidth, number of, output kern_mul, output kern_mul, kern_mul, our_mul\n"
-printf -- " , tnum pairs, ==, !=, more precise , more precise\n"
-printf -- " , , output our_mul, output_our_mul, , \n"
-printf -- "--------, ----------, -----------------, -----------------, --------------, ---------------\n"
-./precision_increasing_bitwidth.out 5  
-./precision_increasing_bitwidth.out 6 
-./precision_increasing_bitwidth.out 7 
-./precision_increasing_bitwidth.out 8  
-./precision_increasing_bitwidth.out 9
+./precision_increasing_bitwidth.out 5 > pres_bw_5.log 
+./precision_increasing_bitwidth.out 6 > pres_bw_6.log 
+./precision_increasing_bitwidth.out 7 > pres_bw_7.log 
+./precision_increasing_bitwidth.out 8 > pres_bw_8.log 
+./precision_increasing_bitwidth.out 9 > pres_bw_9.log 
+
+cat header.txt pres_bw_5.log pres_bw_6.log pres_bw_7.log pres_bw_8.log pres_bw_9.log | column -ts,
+ 
 

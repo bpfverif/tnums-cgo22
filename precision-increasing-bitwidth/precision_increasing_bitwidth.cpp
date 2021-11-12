@@ -44,7 +44,7 @@ u64 get_number_of_concrete_values_in_tnum(tnum_t t) {
   return static_cast<u64>(bmp::pow(bmp::cpp_int(2), z));
 }
 
-void calc_precision_diff_helper(tnum_t t1, tnum_t t2) {
+void calc_precision_helper(tnum_t t1, tnum_t t2) {
   tnum_t abs_res_1 = kern_mul(t1, t2);
   tnum_t abs_res_2 = our_mul(t1, t2);
 
@@ -75,13 +75,13 @@ void calc_precision_diff_helper(tnum_t t1, tnum_t t2) {
   }
 }
 
-void calc_precision_diff() {
+void calc_precision() {
 
   for (size_t i = 0; i < all_tnums.size(); i++) {
     tnum_t t1 = all_tnums[i];
     for (size_t j = 0; j < all_tnums.size(); j++) {
       tnum_t t2 = all_tnums[j];
-      calc_precision_diff_helper(t1, t2);
+      calc_precision_helper(t1, t2);
     }
   }
 }
@@ -100,7 +100,7 @@ int main(int argc, char **argv) {
 
   // generate all n bit tnums
   all_tnums = generate_all_tnums();
-  calc_precision_diff();
+  calc_precision();
 
   double num_tnum_pairs = std::pow(all_tnums.size(), 2);
   double perc_equal = (double)num_output_equal * 100.0 / (double)num_tnum_pairs;

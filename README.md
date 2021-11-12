@@ -122,33 +122,42 @@ correctness of multiplication for bitvectors of width 14, which took around 1
 day. 
 
 ### Source code structure
-The only source file related to this experiment is `tnum.py`, which
-accepts switches for `--bitwidth`, the bitvector width and `--op` for
-the tnum operation that we perform the verification for. The `Tnum`
-class contains the `z3` encoding of tnum operations from the Linux
-kernel. For instance `Tnum.tnum_add` returns a formula containing the
-z3 encoding of the `tnum_add` from the Linux kernel. The
-`TnumOpsVerifier` class contains methods which encode the
-verification condition for the similarly named tnum operations, and verify 
-them using z3 (by checking if the solver returns `unsat`).
+The only source file related to this experiment is `tnum.py`, which accepts
+switches for `--bitwidth`, the bitvector width and `--op` for the tnum operation
+that we perform the verification for. The `Tnum` class contains the `z3`
+encoding of tnum operations from the Linux kernel. For instance `Tnum.tnum_add`
+returns a formula containing the z3 encoding of the `tnum_add` from the Linux
+kernel. The `TnumOpsVerifier` class contains methods which encode the
+verification condition for the similarly named tnum operations, and verify them
+using z3 (by checking if the solver returns `unsat`). 
+
+To perform the verification of a particular tnum operation, say `tnum_add`,
+using bitvectors of witdth `64`, one can use the following command:
+
+```
+python3 tnum.py --bitwidth=64 --op=add
+```
+
+
 
 --------------------------------------------------------------------------------
 
 ## Relative precision of `our_mul` compared to `kern_mul` and `bitwise_mul` (_Fig 4. in the paper submission_)
 In this experiment, we compare the relative precision of our new tnum
 multiplication algorithm `our_mul` with the Linux kernel's algorithm `kern_mul`
-and the algorithm by Regehr and Duongsaa which we call `bitwise_mul`. We
-generate two binaries for each comparison: (i) `kern_mul` vs. `our_mul` and
-(ii). `bitwise_mul` vs `our_mul`. The generated binaries after compilation
-accept a switch for bitwidth as their only command line argument. To finish this
-experiment in a reasonable amount of time, we propose using a bitwidth of `8`.
-To run this evaluation, you can run the bash script `pres.sh` (which uses a
-bitwidth of `8`). This experiment should take roughly 5 minutes.
+and the algorithm by Regehr and Duongsaa
+[[1]](https://www.cs.utah.edu/~regehr/papers/lctes06_2/fp019-regehr.pdf) which we
+call `bitwise_mul`. We generate two binaries for each comparison: (i) `kern_mul`
+vs. `our_mul` and (ii). `bitwise_mul` vs `our_mul`. The generated binaries after
+compilation accept a switch for bitwidth as their only command line argument. To
+finish this experiment in a reasonable amount of time, we propose using a
+bitwidth of `8`. To run this evaluation, you can run the bash script `pres.sh`
+(which uses a bitwidth of `8`). This experiment should take roughly 5 minutes.
 
-### 1. Run the bash script
+### 1. Run script to compile code and produce graph for relative precision comparison
 ```
-cd ../precision-relative
-bash pres.sh
+$ cd ../precision-relative
+$ bash pres.sh
 ```
 
 ### 2. Extract figure from docker
@@ -163,9 +172,12 @@ CONTAINER ID   IMAGE             COMMAND     CREATED        STATUS         PORTS
 
 3. Copy the .png file to your local machine
 ```
-docker cp <insert CONTAINER_ID here>:/home/cgo22-artifact/precision-relative/pres_fig.png <insert destination directory>
+$ docker cp <insert CONTAINER_ID here>:/home/cgo22-artifact/precision-relative/pres_fig.png <insert destination directory>
 ```
 4. Open the png in your favourite image viewer. 
+
+### Expected output
+![Relative Precision](./precision-relative/pres_fig_expected.png)
 
 ### Explanation
 The graph depicts the cumulative distribution of the ratio of set sizes of the
@@ -205,24 +217,21 @@ To compare `kern_mul` to `our_mul`:
 $ g++ -g -O2 -w -I../include/  ../include/conc.c ../include/tnum.c precision_relative.cpp  -o pres_kern_mul_v_our_mul.out -DKERN_MUL_V_OUR_MUL
 $ ./pres_kern_mul_v_our_mul.out 8 > pres_kern_mul_v_our_mul.log
 ```
-To compare `bitwise_mul` to `our_mul`:
 
-```
-$ g++ -g -O2 -w -I../include/  ../include/conc.c ../include/tnum.c precision_relative.cpp  -o pres_bitwise_mul_v_our_mul.out -DBITWISE_MUL_V_OUR_MUL
-$ ./pres_bitwise_mul_v_our_mul.out 8 > pres_bitwise_mul_v_our_mul.log && 
-```
+Every line in the output file `pres_kern_mul_v_our_mul.log` corresponds to a
+unique input tnum pair, and is the ratio of the set size of the output tnum
+produced by `kern_mul` to that of the set size of the output tnum produced by
+`our_mul`. 
 
-For the comparison of `kern_mul` and `our_mul` every line in the output file
-`pres_kern_mul_v_our_mul.log` corresponds to a unique input tnum pair, and is
-the ratio of the set size of the output tnum produced by `kern_mul` to that of
-the set size of the output tnum produced by `our_mul`. 
+Similarly, we use the flag `-DBITWISE_MUL_V_OUR_MUL` to compile the binary for
+comparing `bitwise_mul` to `our_mul`. 
 
 To produce the figure:
 ```
-python3 graph_precision_relative.py --bitwidth=8 --infile1=pres_kern_mul_v_our_mul.log --infile2=pres_bitwise_mul_v_our_mul.log --outfile=pres_fig.png --op1=kern_mul --op2=bitwise_mul --op=our_mul
+$ python3 graph_precision_relative.py --bitwidth=8 --infile1=pres_kern_mul_v_our_mul.log --infile2=pres_bitwise_mul_v_our_mul.log --outfile=pres_fig.png --op1=kern_mul --op2=bitwise_mul --op=our_mul
 ```
-The command line switches to the python file `graph_precision_relative.py`
-should be self-explanatory. 
+The command line switches to `graph_precision_relative.py` should be
+self-explanatory. 
 
 --------------------------------------------------------------------------------
 ## Performance of `kern_mul` vs `bitwise_mul` vs `our_mul`  (_Fig 5. in the paper submission_)
@@ -238,13 +247,13 @@ minutes.
 architecture, if necessary.
 
 
-### Run script to compile code and produce graph for multiplication algorithms comparison
+### 1. Run script to compile code and produce graph for multiplication algorithms comparison
 ```
 $ cd ../performance
 $ bash perf.sh
 ```
 
-### Extract graph from docker
+### 2. Extract graph from docker
 1. Open a new terminal to find docker image ID
 ```
 $ docker ps -a
@@ -256,9 +265,13 @@ CONTAINER ID   IMAGE             COMMAND     CREATED        STATUS         PORTS
 
 3. Copy the .png file to your local machine
 ```
-docker cp <insert CONTAINER_ID here>:/home/cgo-artifact/performance/perf.png <insert destination directory>
+$ docker cp <insert CONTAINER_ID here>:/home/cgo-artifact/performance/perf.png <insert destination directory>
 ```
 4. Open the png in your preferred image viewer. 
+
+### Expected output
+![Performance of our_mul](./performance/perf_expected.png)
+
 
 ### Explanation
 The graph depicts a cumulative distribution of the number of CPU cycles taken by
@@ -281,14 +294,14 @@ produce a 64 bit tnum.
  
 To compile the binary for `kern_mul` we use the compile flag `-DKERN_MUL`:
 ```
-g++ -g -O2 -w -I../include/  ../include/conc.c ../include/tnum.c performance.cpp tnum_random.cpp -o perf_kern_mul.out -DKERN_MUL
+$ g++ -g -O2 -w -I../include/  ../include/conc.c ../include/tnum.c performance.cpp tnum_random.cpp -o perf_kern_mul.out -DKERN_MUL
 ```
 Similarly, `-DBITWISE_MUL_OPT` is used for `bitwise_mul` and `-DOUR_MUL` is used 
 for `our_mul`.
 
 To run the experiment for `kern_mul`: 
 ```
-./perf_kern_mul.out 10 5 40000000 > perf_kern_mul.log
+$ ./perf_kern_mul.out 10 5 40000000 > perf_kern_mul.log
 ```
 The 1st command line argument is for the number of trails: how many times a
 multiplication operation should be performed for a given input tnum pair. The
@@ -301,7 +314,72 @@ operation.
 Finally, the following python script generates the graph using the above 
 numbers.
 ```
-python3 graph_performance.py
+$ python3 graph_performance.py
 ```
 --------------------------------------------------------------------------------
+## Comparing the precision of `our_mul` vs. `kern_mul` with increasing bitwidth
+
+In this experiment, we compare the precision of `our_mul` and `kern_mul` as a
+function of the bitwidth of the input tnums. For a particular bitwidth, we
+provide as input all possible tnum of that bitwidth to both these algorithms. We
+then try to answer the question: What percentage of input pairs lead to a better
+precision in the result produced by our_mul? How does this percentage change
+with increasing bitwidth? The experiment should take roughly 5 minutes.
+
+
+### 1. Run the following command which compiles the code, 
+```
+$ bash inc.sh
+```
+
+### Expected output
+```
+bitwidth   number of    output kern_mul       output kern_mul     kern_mul          our_mul
+           tnum pairs   ==                    !=                  more precise      more precise
+                        output our_mul        output_our_mul                        
+--------   ----------   -----------------     -----------------   --------------    ---------------
+5          59049        59041 (99.986%)       8 (0.014%)          2 (25.000%)       6 (75.000%)
+6          531441       531261 (99.966%)      180 (0.034%)        41 (22.778%)      139 (77.222%)
+7          4782969      4780264 (99.943%)     2705 (0.057%)       586 (21.664%)     2119 (78.336%)
+8          43046721     43013489 (99.923%)    33232 (0.077%)      6961 (20.947%)    26271 (79.053%)
+9          387420489    387057650 (99.906%)   362839 (0.094%)     74158 (20.438%)   288681 (79.562%)
+```
+
+### Explanation
+
+The output table should show that as bitwidth increases, the percentage of
+inputs for which both the algorithms produce the same output decreases (column
+3). That is, a larger percentage of inputs produce _different_ outputs (column
+4). Of those inputs which lead to a different output by both the algorithms, the
+percentage of outputs where `our_mul` is more precise _increases_ with
+increasing bitwidth (column 6). We conclude that `our_mul` is more precise than
+`kern_mul` with increasing bitwidth
+
+### Source code structure.
+The main source file `precision_increasing_bitwidth.cpp` accepts just one
+command line argument: bitwidth. The function `calc_precision_helper` takes as
+input two tnums and multiplies them using both algorithms: `kern_mul` and
+`our_mul`. It then aggregates statistics for all possible tnum pairs for a
+particular bitwidth. Finally it prints out the following statistics in a
+comma-separated format (in this order): 
+
+```
+bitwidth, number of tnum pairs, output kern_mul == output our_mul, output kern_mul != output our_mul, kern_mul more precise, our_mul more precise
+```
+
+To compile the code manually:
+```
+$ g++ -g -O2 -w -I../include/  ../include/conc.c ../include/tnum.c precision_increasing_bitwidth.cpp  -o precision_increasing_bitwidth.out
+```
+
+To run the code manually for a particular bitwidth, say 8:
+```
+$ ./precision_increasing_bitwidth.out 8 
+```
+
+The output should be a comma-separated list of values, which follow the order
+given in the header template mentioned above.
+
+--------------------------------------------------------------------------------
+
 _Fin._
