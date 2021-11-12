@@ -225,74 +225,83 @@ The command line switches to the python file `graph_precision_relative.py`
 should be self-explanatory. 
 
 --------------------------------------------------------------------------------
-
-
-### Performance of `mul` vs `our_mul` (_Fig 6. in the paper submission_)
+## Performance of `kern_mul` vs `bitwise_mul` vs `our_mul`  (_Fig 5. in the paper submission_)
 In this experiment we prepare a graph depicting the difference in performance
-(cycles) between our multiplication algorithm `our_mul` and the Linux kernel's
-multiplication algorithm `mul`. We randomly sample 4 million 64-bit tnum pairs,
-and provide them as input to these algorithms. The experiment should take
-roughly 15 minutes.
+(cycles) between our multiplication algorithm `our_mul`, the Linux kernel's
+multiplication algorithm `kern_mul`, and the multiplication algorithm by Regehr
+and Duongsaa, `bitwise_mul`. We randomly sample 4 million 64-bit tnum pairs, and
+provide them as input to these algorithms. The experiment should take roughly 10
+minutes. 
+
+`Note` In the following bash script `perf.sh`, the thread is pinned to a CPU ID
+`5`. Please change the variable `CPU_ID` in the script according to your cpu
+architecture, if necessary.
 
 
-#### Compile code for `mul` and `our_mul`
+### Run script to compile code and produce graph for multiplication algorithms comparison
 ```
-cd ../performance
-
-g++ -g -O2 -w -I../include/ ../include/conc.c ../include/tnum.c performance.cpp tnum_random.cpp -o performance_mul.o -DTNUM_OP_MUL && g++ -g -O2 -w -I../include/ ../include/conc.c ../include/tnum.c performance.cpp tnum_random.cpp -o performance_our_mul.o -DTNUM_OP_OUR_MUL
-```
-
-#### Run 
-Note that the 2nd command line argument is for cpu-id, to pin the thread to a particular cpu.
-In the following exmaple, the thread is pinned to a cpu-id 5. 
-Please change this flag according to your cpu architecture, if necessary.
-```
-./performance_mul.o 10 5 > perf_mul.log && ./performance_our_mul.o 10 5 > perf_our_mul.log
+$ cd ../performance
+$ bash perf.sh
 ```
 
-#### Produce graph
-```
-python3 graph_performance.py
-```
-
-#### Extract graph from docker
+### Extract graph from docker
 1. Open a new terminal to find docker image ID
 ```
 $ docker ps -a
 
 CONTAINER ID   IMAGE             COMMAND     CREATED        STATUS         PORTS    NAMES
-30e20b7c68d7   cgo22_artifact1   "/bin/bash" 4 hours ago    Up 20 minutes           elegant_tu
+30e20b7c68d7   cgo22_artifact   "/bin/bash" 4 hours ago    Up 20 minutes           elegant_tu
 ```
 2. Copy cgo22_artifact `CONTAINER ID` to clipboard (your ID may be different).
 
 3. Copy the .png file to your local machine
 ```
-docker cp <insert CONTAINER_ID here>:/home/cgo22-artifact/performance/perf.png <insert destination directory>
+docker cp <insert CONTAINER_ID here>:/home/cgo-artifact/performance/perf.png <insert destination directory>
 ```
-4. Open the png in your favourite image viewer. 
+4. Open the png in your preferred image viewer. 
 
-#### Explanation
+### Explanation
 The graph depicts a cumulative distribution of the number of CPU cycles taken by
-`mul` and `our_mul` for all the 4M randomly sampled tnum pairs. For the paper 
-submission we did this for 400M randomly sample tnum pairs. For each tnum
-pair we perform 10 trials, to eliminate noise, and chose the _minimum_. 
-The results should indicate that `our_mul` is faster on average than `mul`.
+`our_mul`, `kern_mul`, and `bitwise_mul` for all the 4M randomly sampled tnum
+pairs. For the paper submission we did this for 40M randomly sample tnum pairs.
+For each tnum pair we perform 10 trials, to eliminate noise, and chose the
+_minimum_. The results should indicate that `our_mul` is faster on average than
+`kern_mul` and `bitwise_mul`.
 
-#### Source code structure
-`performance.cpp` contains the source for the performance
-calculations. Here, we use preprocessor macros for performing the
-specific tnum operation `mul` or `our_mul` and avoid if-branches. For
-measuring performance, we check the `RDTSC` time stamp counter
-register. We also provide an option for pinning the thread to a cpu,
-to avoid cache-related issues. The other relevant file here is
-`tnum_random.cpp`. This contains the source for generating the random
-64-bit tnums we use in the experiment. The function
-`generate_random_tnum` uses a randomly distributed value from 0 to
-3^64 to produce a 64 bit tnum. 
+### Source code structure
+`performance.cpp` contains the source for the performance calculations. Here, we
+use preprocessor macros for performing the specific tnum operation `kern_mul`,
+`our_mul`, or `bitwise_mul` and avoid if-branches. For measuring performance, we
+check the `RDTSC` time stamp counter register. We also provide an option for
+pinning the thread to a cpu, to avoid cache-related issues. The other relevant
+file here is `tnum_random.cpp`. This contains the source for generating the
+random 64-bit tnums we use in the experiment. The function
+`generate_random_tnum` uses a randomly distributed value from 0 to 3^64 to
+produce a 64 bit tnum. 
+ 
+To compile the binary for `kern_mul` we use the compile flag `-DKERN_MUL`:
+```
+g++ -g -O2 -w -I../include/  ../include/conc.c ../include/tnum.c performance.cpp tnum_random.cpp -o perf_kern_mul.out -DKERN_MUL
+```
+Similarly, `-DBITWISE_MUL_OPT` is used for `bitwise_mul` and `-DOUR_MUL` is used 
+for `our_mul`.
 
+To run the experiment for `kern_mul`: 
+```
+./perf_kern_mul.out 10 5 40000000 > perf_kern_mul.log
+```
+The 1st command line argument is for the number of trails: how many times a
+multiplication operation should be performed for a given input tnum pair. The
+2nd argument pins the thread performing the experiment to the given CPU ID. The
+3rd argument is for the number of random input tnum pairs for which the
+experiment is to be run. Each line in the output corresponds to a cycle count:
+the _minimum_ of a given number of trials for the particular multiplication
+operation.
+
+Finally, the following python script generates the graph using the above 
+numbers.
+```
+python3 graph_performance.py
+```
 --------------------------------------------------------------------------------
 _Fin._
-
-[1] J. Regehr and U. Duongsaa, “Deriving abstract transfer functions for
-analyzing embedded software,” ACM SIGPLAN Notices, vol. 41, no. 7,
-pp. 34–43, 2006.

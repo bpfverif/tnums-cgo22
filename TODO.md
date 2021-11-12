@@ -1,2 +1,4 @@
 - check our_mul encoding is in agreement with the paper
 - fix explanation for precsion relative (80%)
+- fixed CPU ID in bash script for performance, is this okay? 
+- graph_performance accept a file
