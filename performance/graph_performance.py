@@ -105,4 +105,4 @@ if __name__ == "__main__":
     axis.legend(title=legend_label)
 
     # pyplot.xlim(right=xmax)
-    mp.pyplot.savefig("./perf.png", dpi=300)
+    mp.pyplot.savefig("./perf_fig.png", dpi=300)

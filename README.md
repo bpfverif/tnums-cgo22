@@ -75,7 +75,9 @@ we perform automated verification with `8` bits. This experiment should take
 roughly 5 minutes.
 
 
-### Run
+### Run the script
+The following script invokes a python script which performs the verification 
+for all the tnum operations. 
 ```
 cd verification
 bash verif.sh
@@ -145,16 +147,20 @@ python3 tnum.py --bitwidth=64 --op=add
 ## Relative precision of `our_mul` compared to `kern_mul` and `bitwise_mul` (_Fig 4. in the paper submission_)
 In this experiment, we compare the relative precision of our new tnum
 multiplication algorithm `our_mul` with the Linux kernel's algorithm `kern_mul`
-and the algorithm by Regehr and Duongsaa
-[[1]](https://www.cs.utah.edu/~regehr/papers/lctes06_2/fp019-regehr.pdf) which we
-call `bitwise_mul`. We generate two binaries for each comparison: (i) `kern_mul`
-vs. `our_mul` and (ii). `bitwise_mul` vs `our_mul`. The generated binaries after
-compilation accept a switch for bitwidth as their only command line argument. To
-finish this experiment in a reasonable amount of time, we propose using a
-bitwidth of `8`. To run this evaluation, you can run the bash script `pres.sh`
-(which uses a bitwidth of `8`). This experiment should take roughly 5 minutes.
+and the
+[algorithm](https://www.cs.utah.edu/~regehr/papers/lctes06_2/fp019-regehr.pdf)
+by Regehr and Duongsaa which we call `bitwise_mul`. We generate two binaries for
+each comparison: (i) `kern_mul` vs. `our_mul` and (ii). `bitwise_mul` vs
+`our_mul`. The generated binaries after compilation accept a switch for bitwidth
+as their only command line argument. To finish this experiment in a reasonable
+amount of time, we propose using a bitwidth of `8`. To run this evaluation, you
+can run the bash script `pres.sh` (which uses a bitwidth of `8`). This
+experiment should take roughly 5 minutes.
 
-### 1. Run script to compile code and produce graph for relative precision comparison
+### 1. Run the following script
+The script first compiles the code into two binaries, runs them, saves
+their output in .log files, and runs a python script to create a graph from the
+.log files. 
 ```
 $ cd ../precision-relative
 $ bash pres.sh
@@ -247,13 +253,16 @@ minutes.
 architecture, if necessary.
 
 
-### 1. Run script to compile code and produce graph for multiplication algorithms comparison
+### 1. Run the following script.
+The script first compiles the code into multiple binaries, runs them,
+saves their output in .log files, and runs a python script to create a graph
+from the .log files. 
 ```
 $ cd ../performance
 $ bash perf.sh
 ```
 
-### 2. Extract graph from docker
+### 2. Extract the figure from docker
 1. Open a new terminal to find docker image ID
 ```
 $ docker ps -a
@@ -265,7 +274,7 @@ CONTAINER ID   IMAGE             COMMAND     CREATED        STATUS         PORTS
 
 3. Copy the .png file to your local machine
 ```
-$ docker cp <insert CONTAINER_ID here>:/home/cgo-artifact/performance/perf.png <insert destination directory>
+$ docker cp <insert CONTAINER_ID here>:/home/cgo22-artifact/performance/perf_fig.png <insert destination directory>
 ```
 4. Open the png in your preferred image viewer. 
 
@@ -327,9 +336,13 @@ precision in the result produced by our_mul? How does this percentage change
 with increasing bitwidth? The experiment should take roughly 5 minutes.
 
 
-### 1. Run the following command which compiles the code, 
+### 1. Run the following script
+The script first compiles the code into a single binary, invokes it using
+different command line parameters (for bitwidth), concats the output and pipes
+the output to the `column` command.
 ```
-$ bash inc.sh
+$ cd ../precision-increasing-bitwidth
+$ bash pres_inc_bw.sh
 ```
 
 ### Expected output
