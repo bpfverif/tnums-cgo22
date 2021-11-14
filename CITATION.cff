@@ -1,0 +1,16 @@
+cff-version: 1.0.0
+message: "If you use this software, please cite it as below."
+authors:
+  - family-names: Vishwanathan
+    given-names: Harishankar
+  - family-names: Shachnai
+    given-names: Matan
+  - family-names: Narayana
+    given-names: Srinivas
+  - family-names: Nagarakatte
+    given-names: Santosh 
+title: "Sound, Precise, and Fast Abstract Interpretation
+with Tristate Numbers"
+version: 1.0.0
+# doi: 10.5281/zenodo.1234
+date-released: 2021-11-14
