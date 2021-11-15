@@ -55,8 +55,8 @@ for managing docker as a non-root user [here](https://docs.docker.com/engine/ins
 
 2.  Run the docker image:
 ```
-docker load < tnums_cgo22.tar.gz
-docker run -it tnums_cgo22
+docker load < tnums-cgo22.tar.gz
+docker run -it tnums-cgo22
 cd cgo22-artifact
 ```
 
@@ -172,9 +172,9 @@ $ bash pres.sh
 $ docker ps -a
 
 CONTAINER ID   IMAGE             COMMAND     CREATED        STATUS         PORTS    NAMES
-30e20b7c68d7   tnums_cgo22   "/bin/bash" 4 hours ago    Up 20 minutes           elegant_tu
+30e20b7c68d7   tnums-cgo22   "/bin/bash" 4 hours ago    Up 20 minutes           elegant_tu
 ```
-2. Copy tnums_cgo22 `CONTAINER ID` to clipboard (your ID may be different).
+2. Copy tnums-cgo22 `CONTAINER ID` to clipboard (your ID may be different).
 
 3. Copy the .png file to your local machine
 ```
@@ -268,9 +268,9 @@ $ bash perf.sh
 $ docker ps -a
 
 CONTAINER ID   IMAGE             COMMAND     CREATED        STATUS         PORTS    NAMES
-30e20b7c68d7   tnums_cgo22   "/bin/bash" 4 hours ago    Up 20 minutes           elegant_tu
+30e20b7c68d7   tnums-cgo22   "/bin/bash" 4 hours ago    Up 20 minutes           elegant_tu
 ```
-2. Copy tnums_cgo22 `CONTAINER ID` to clipboard (your ID may be different).
+2. Copy tnums-cgo22 `CONTAINER ID` to clipboard (your ID may be different).
 
 3. Copy the .png file to your local machine
 ```
