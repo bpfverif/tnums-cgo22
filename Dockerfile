@@ -24,5 +24,5 @@ WORKDIR /home
 ####################################################################
 # Git Clone cgo2022 artifact
 ####################################################################
-RUN git clone https://github.com/bpfverif/cgo22-artifact.git
+RUN git clone https://github.com/bpfverif/tnums-cgo22.git
 WORKDIR /home/
