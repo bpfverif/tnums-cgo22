@@ -55,9 +55,8 @@ for managing docker as a non-root user [here](https://docs.docker.com/engine/ins
 
 2.  Run the docker image:
 ```
-docker load < tnums-cgo22.tar.gz
-docker run -it tnums-cgo22
-cd cgo22-artifact
+docker run -it mys35/tnums-cgo22
+cd tnums-cgo22
 ```
 
 ### Known issues. 
@@ -172,13 +171,13 @@ $ bash pres.sh
 $ docker ps -a
 
 CONTAINER ID   IMAGE             COMMAND     CREATED        STATUS         PORTS    NAMES
-30e20b7c68d7   tnums-cgo22   "/bin/bash" 4 hours ago    Up 20 minutes           elegant_tu
+30e20b7c68d7   mys35/tnums-cgo22   "/bin/bash" 4 hours ago    Up 20 minutes           elegant_tu
 ```
-2. Copy tnums-cgo22 `CONTAINER ID` to clipboard (your ID may be different).
+2. Copy mys35/tnums-cgo22 `CONTAINER ID` to clipboard (your ID may be different).
 
 3. Copy the .png file to your local machine
 ```
-$ docker cp <insert CONTAINER_ID here>:/home/cgo22-artifact/precision-relative/pres_fig.png <insert destination directory>
+$ docker cp <insert CONTAINER_ID here>:/home/tnums-cgo22/precision-relative/pres_fig.png <insert destination directory>
 ```
 4. Open the png in your favourite image viewer. 
 
@@ -268,13 +267,13 @@ $ bash perf.sh
 $ docker ps -a
 
 CONTAINER ID   IMAGE             COMMAND     CREATED        STATUS         PORTS    NAMES
-30e20b7c68d7   tnums-cgo22   "/bin/bash" 4 hours ago    Up 20 minutes           elegant_tu
+30e20b7c68d7   mys35/tnums-cgo22   "/bin/bash" 4 hours ago    Up 20 minutes           elegant_tu
 ```
-2. Copy tnums-cgo22 `CONTAINER ID` to clipboard (your ID may be different).
+2. Copy mys35/tnums-cgo22 `CONTAINER ID` to clipboard (your ID may be different).
 
 3. Copy the .png file to your local machine
 ```
-$ docker cp <insert CONTAINER_ID here>:/home/cgo22-artifact/performance/perf_fig.png <insert destination directory>
+$ docker cp <insert CONTAINER_ID here>:/home/tnums-cgo22/performance/perf_fig.png <insert destination directory>
 ```
 4. Open the png in your preferred image viewer. 
 
