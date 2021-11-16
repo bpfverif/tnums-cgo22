@@ -203,18 +203,18 @@ Linux kernel's implementation and the algorithm by Regehr and Duongsaa.
 
 ### Source code structure
 The main source file for this evaluation is `precision_relative.cpp` and all the
-files in the `include` directory. The `include` directory contains `tnum.c`
-which contains the source code of the tnum algorithms pulled from the Linux
-kernel. This file contains the code for `our_mul` and `bitwise_mul` algorithms,
-along with `kern_mul`.  Coming to `precision_relative.cpp`, the function
-`calc_precision_diff_helper` takes as input two tnums `t1` and `t2` and performs
-tnum multiplication on them using two algorithms. Which two algorithms to use is
-defined at compile time using a `-D` flag: `KERN_MUL_V_OUR_MUL` would use
-`kern_mul` as the first multiplication algorithm and `our_mul` as the second.
-Finally, the necessary calculations related to computing precision are
-performed. If using a bitwidth of 8, we zero out the top 56 bits from the output
-tnum's value and mask, to effectively produce an 8-bit tnum. The function
-`generate_all_tnums` generates all possible tnums of a particular bitwidth. 
+files in the `include` directory. The `include` directory contains some other
+utility `.c` files. Importantly it contains `tnum.c` which has the source code
+of the tnum algorithms pulled from the Linux kernel. This file contains the code
+for `our_mul` and `bitwise_mul` algorithms, along with `kern_mul`.  Coming to
+`precision_relative.cpp`, the function `calc_precision_diff_helper` takes as
+input two tnums `t1` and `t2` and performs tnum multiplication on them using two
+algorithms. Which two algorithms to use is defined at compile time using a `-D`
+flag: `KERN_MUL_V_OUR_MUL` would use `kern_mul` as the first multiplication
+algorithm and `our_mul` as the second. Finally, the necessary calculations
+related to computing precision are performed. If using a bitwidth of 8, we zero
+out the top 56 bits from the output tnum's value and mask, to effectively
+produce an 8-bit tnum. 
 
 To compare `kern_mul` to `our_mul`:
 
@@ -295,9 +295,9 @@ use preprocessor macros for performing the specific tnum operation `kern_mul`,
 `our_mul`, or `bitwise_mul` and avoid if-branches. For measuring performance, we
 check the `RDTSC` time stamp counter register. We also provide an option for
 pinning the thread to a cpu, to avoid cache-related issues. The other relevant
-file here is `tnum_random.cpp`. This contains the source for generating the
-random 64-bit tnums we use in the experiment. The function
-`generate_random_tnum` uses a randomly distributed value from 0 to 3^64 to
+file here is `include/tnum_random.cpp`, which contains the source code for
+generating the random 64-bit tnums we use in the experiment. The function
+`generate_random_tnum()` uses a randomly distributed value from 0 to 3^64 to
 produce a 64 bit tnum. 
  
 To compile the binary for `kern_mul` we use the compile flag `-DKERN_MUL`:
