@@ -5,41 +5,14 @@
 #include <vector>
 #include "conc.h"
 #include "tnum.h" 
+#include "tnum_util.hpp" 
 
 typedef struct tnum tnum_t;
 
 int bitvec_width = 8; // default bitvec witdh
 std::vector<tnum_t> all_tnums; // all possible n-bit tnums
-
-namespace bmp = boost::multiprecision;
-
 u64 other_mul_better = 0;
 u64 our_mul_better = 0;
-
-std::vector<tnum_t> generate_all_tnums(){
-
-	std::vector<tnum_t> all_tnums;
-	for (u64 i =0 ; i<std::pow(2,bitvec_width); i++ ) {
-		for (u64 j =0; j < std::pow(2, bitvec_width); j++) {
-			if ((i & j) == 0) {
-				tnum_t t = {.value = i, .mask = j};
-				all_tnums.push_back(t);
-			}
-		}
-	}	
-	return all_tnums;
-}
-
-u64 get_number_of_concrete_values_in_tnum(tnum_t t) {
-	int z =  0;
-	for(auto i = 0; i< bitvec_width; i++) {
-		if ((t.mask & 1ULL) == 1ULL) {
-			z++;
-		}
-		t.mask = t.mask >> 1;
-	}
-	return static_cast<u64> (bmp::pow(bmp::cpp_int(2), z));
-}
 
 void calc_precision_diff_helper(tnum_t t1, tnum_t t2)
 {
@@ -63,8 +36,8 @@ void calc_precision_diff_helper(tnum_t t1, tnum_t t2)
 	bool diff = (abs_res_1.value != abs_res_2.value) && (abs_res_1.mask != abs_res_2.mask);
 
 	if (diff) {
-		u64 num_conc_in_abs_res_1 = get_number_of_concrete_values_in_tnum(abs_res_1);
-		u64 num_conc_in_abs_res_2 = get_number_of_concrete_values_in_tnum(abs_res_2);
+		u64 num_conc_in_abs_res_1 = get_number_of_concrete_values_in_tnum(abs_res_1, bitvec_width);
+		u64 num_conc_in_abs_res_2 = get_number_of_concrete_values_in_tnum(abs_res_2, bitvec_width);
 
 		if (num_conc_in_abs_res_1 > num_conc_in_abs_res_2)
 			our_mul_better++;
@@ -104,7 +77,7 @@ int main(int argc, char** argv)
 	bitvec_width = atoi(argv[1]);
 
 	// generate all n bit tnum
-	all_tnums = generate_all_tnums();
+	all_tnums = generate_all_tnums(bitvec_width);
 
 	calc_precision_diff();
 

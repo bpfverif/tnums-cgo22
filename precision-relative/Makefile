@@ -1,6 +1,10 @@
 CC=g++
-CFLAGS=-I../include/ 
-CMD=$(CC) -g -O2 -w $(CFLAGS) ../include/conc.c ../include/tnum.c precision_relative.cpp 
+INCLUDE_DIR=../include
+FILES=conc.c tnum.c
+SOURCES=$(FILES:%.c=$(INCLUDE_DIR)/%.c)
+CMD=$(CC) -g -O2 -w -I$(INCLUDE_DIR) $(SOURCES) precision_relative.cpp 
+
+all: kern_mul_v_our_mul bitwise_mul_v_our_mul
 
 kern_mul_v_our_mul:
 	$(CMD) -o pres_kern_mul_v_our_mul.out -DKERN_MUL_V_OUR_MUL

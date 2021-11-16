@@ -2,8 +2,7 @@
 
 rm -f ./*.log
 make clean
-make kern_mul_v_our_mul
-make bitwise_mul_v_our_mul
+make all
 
 BITWIDTH=8
 
