@@ -5,9 +5,9 @@ rm -f ./*.png
 make clean
 make all
 
-CPU_ID=5
+CPU_ID=3
 NUM_TRIALS=10
-NUM_TNUM_PAIRS=40000
+NUM_TNUM_PAIRS=4000000
 
 ./perf_kern_mul.out ${NUM_TRIALS} ${CPU_ID} ${NUM_TNUM_PAIRS} > perf_kern_mul.log &&
 ./perf_bitwise_mul_opt.out ${NUM_TRIALS} ${CPU_ID} ${NUM_TNUM_PAIRS} > perf_bitwise_mul_opt.log  &&

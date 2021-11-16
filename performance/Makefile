@@ -1,6 +1,8 @@
 CC=g++
-CFLAGS=-I../include/ 
-CMD=$(CC) -g -O2 -w $(CFLAGS) ../include/conc.c ../include/tnum.c performance.cpp tnum_random.cpp
+INCLUDE_DIR=../include
+FILES=conc.c tnum.c
+SOURCES=$(FILES:%.c=$(INCLUDE_DIR)/%.c)
+CMD=$(CC) -g -O2 -w -I$(INCLUDE_DIR) $(SOURCES) performance.cpp tnum_random.cpp
 
 all: kern_mul bitwise_mul_opt our_mul
 	

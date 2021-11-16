@@ -6,45 +6,14 @@
 #include <numeric>
 #include "tnum.h" 
 #include "tnum_random.hpp"
+#include "rdtsc_util.h" 
 
 #define CPUFREQ_MHZ (2200.0)
 static const float one_cycle_ns = ((float)1000 / CPUFREQ_MHZ);
-
 int bitvec_width = 64;
 size_t num_trials = 10;
-int cpu_id = 15;
+int cpu_id = 3; // default to CPU ID 3
 int num_tnum_pairs = 40000000; // default to 4 million
-
-// http://www.intel.com/content/www/us/en/embedded/training/ia-32-ia-64-benchmark-code-execution-paper.html
-static inline
-uint64_t RDTSC_START ( void )
-{
-
-	unsigned cycles_low, cycles_high;
-
-	asm volatile ( "CPUID\n\t"
-				   "RDTSC\n\t"
-				   "mov %%edx, %0\n\t"
-				   "mov %%eax, %1\n\t"
-				   : "=r" (cycles_high), "=r" (cycles_low)::
-				   "%rax", "%rbx", "%rcx", "%rdx");
-
-	return ((uint64_t) cycles_high << 32) | cycles_low;
-}
-
-static inline
-uint64_t RDTSCP ( void )
-{
-	unsigned cycles_low, cycles_high;
-
-	asm volatile( "RDTSCP\n\t"
-				  "mov %%edx, %0\n\t"
-				  "mov %%eax, %1\n\t"
-				  "CPUID\n\t": "=r" (cycles_high), "=r" (cycles_low)::
-				  "%rax", "%rbx", "%rcx", "%rdx");
-	
-	return ((uint64_t) cycles_high << 32) | cycles_low;
-}
 
 void calc_cycles() {
 	tnum_t tnum_res;
