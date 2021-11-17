@@ -14,4 +14,4 @@ with Tristate Numbers"
 version: 1.0.0
 # doi: 10.5281/zenodo.1234
 date-released: 2021-11-14
-url: "https://github.com/bpfverif/cgo22-artifact.git"
+url: "https://github.com/bpfverif/tnums-cgo22.git"

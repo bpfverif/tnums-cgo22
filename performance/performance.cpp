@@ -6,7 +6,7 @@
 #include <numeric>
 #include "tnum.h" 
 #include "tnum_random.hpp"
-#include "rdtsc_util.h" 
+#include "tnum_util.hpp"
 
 #define CPUFREQ_MHZ (2200.0)
 static const float one_cycle_ns = ((float)1000 / CPUFREQ_MHZ);
@@ -14,6 +14,33 @@ int bitvec_width = 64;
 size_t num_trials = 10;
 int cpu_id = 3; // default to CPU ID 3
 int num_tnum_pairs = 40000000; // default to 4 million
+
+static inline u64 RDTSC_START(void) {
+
+  unsigned cycles_low, cycles_high;
+
+  asm volatile("CPUID\n\t"
+               "RDTSC\n\t"
+               "mov %%edx, %0\n\t"
+               "mov %%eax, %1\n\t"
+               : "=r"(cycles_high), "=r"(cycles_low)::"%rax", "%rbx", "%rcx",
+                 "%rdx");
+
+  return ((u64)cycles_high << 32) | cycles_low;
+}
+
+static inline u64 RDTSCP(void) {
+  unsigned cycles_low, cycles_high;
+
+  asm volatile("RDTSCP\n\t"
+               "mov %%edx, %0\n\t"
+               "mov %%eax, %1\n\t"
+               "CPUID\n\t"
+               : "=r"(cycles_high), "=r"(cycles_low)::"%rax", "%rbx", "%rcx",
+                 "%rdx");
+
+  return ((u64)cycles_high << 32) | cycles_low;
+}
 
 void calc_cycles() {
 	tnum_t tnum_res;
@@ -42,6 +69,12 @@ void calc_cycles() {
         total_cycles = end - start;
         cycles_ij.push_back(total_cycles);
     }
+
+#ifdef DEBUG_TO_STDERR
+        std::cerr << "t1:  "  << tnum_to_string(t1, bitvec_width) << std::endl;
+        std::cerr << "t2:  "  << tnum_to_string(t2, bitvec_width) << std::endl;
+        std::cerr << "tres:"  << tnum_to_string(tnum_res, bitvec_width) << std::endl;
+#endif
     
     // get mininum of all trials
     std::sort(cycles_ij.begin(), cycles_ij.end());

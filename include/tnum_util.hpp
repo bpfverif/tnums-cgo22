@@ -33,4 +33,12 @@ u64 get_number_of_concrete_values_in_tnum(tnum_t t, int bitvec_width) {
 	return static_cast<u64> (bmp::pow(bmp::cpp_int(2), z));
 }
 
+std::string tnum_to_string(tnum_t t, int bitvec_width) {
+	char tnum_string[65];
+	tnum_sbin(tnum_string, 65, t);
+	return std::string(tnum_string).substr(64-bitvec_width) + std::string(" (") +\
+		std::to_string(t.value) + std::string(":") + \
+		std::to_string(t.mask) + std::string(")");
+}
+
 #endif /* TNUM_UTIL_H*/
