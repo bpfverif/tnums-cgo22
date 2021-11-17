@@ -5,7 +5,7 @@ rm -f ./*.png
 make clean
 make all
 
-CPU_ID=3
+CPU_ID=5
 NUM_TRIALS=10
 NUM_TNUM_PAIRS=4000000
 

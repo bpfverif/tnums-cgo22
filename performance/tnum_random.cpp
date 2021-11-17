@@ -5,7 +5,8 @@ namespace brand = boost::random;
 
 // https://www.boost.org/doc/libs/1_61_0/libs/multiprecision/doc/html/boost_multiprecision/tut/random.html
 // https://www.boost.org/doc/libs/1_62_0/libs/multiprecision/doc/html/boost_multiprecision/tut/ints/cpp_int.html
-brand::mt19937 mt;
+// https://stackoverflow.com/questions/59039358/boostrandom-generates-identical-values-too-often-from-the-same-seed-at-differe
+brand::mt19937 mt; // default_seed = 5489u
 brand::uniform_int_distribution<bmp::cpp_int> ui(0, bmp::pow(bmp::cpp_int(3), 64));
 
 std::string to_base_3(bmp::cpp_int n){
