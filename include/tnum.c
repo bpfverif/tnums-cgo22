@@ -206,7 +206,7 @@ struct tnum bitwise_mul_opt(struct tnum a, struct tnum b)
 }
 
 /* our_mul (from the paper) */
-struct tnum our_mul(struct tnum b, struct tnum a)
+struct tnum our_mul(struct tnum a, struct tnum b)
 {
 	u64 acc_v = a.value * b.value;
 	struct tnum acc_m = TNUM(0, 0);
