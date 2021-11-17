@@ -8,18 +8,15 @@ palette = mp.pyplot.get_cmap('Set1')
 mp.rcParams['figure.autolayout'] = True
 mp.rcParams['font.size'] = 12
 
-
-# '-'       solid line style
-# '--'      dashed line style
-# '-.'      dash-dot line style
-# ':'       dotted line style
-
+# A map from 
+# <tnum_op> : [<tnum op name in graph>, <graph line style>, <graph line color>, <graph line transparency>]
 ops = OrderedDict([
 	("kern_mul", ["kern_mul", "-", "black", 0.5]), 
 	("bitwise_mul_opt", ["bitwise_mul", ":", "black", 1]), 
 	("our_mul", ["our_mul", "--", "black", 1])
 	])
 
+# ensure that output files are named perf_<op>.log
 fp = "./perf_{}.log"
 
 kern_avg = 0
@@ -58,7 +55,7 @@ if __name__ == "__main__":
 		data = np.loadtxt(f, delimiter=",", skiprows=1)
 		data_ops[op] = data
 
-	# fix the xlimit of graph at the 99th percentile
+	# # fix the xlimit of graph at the 99th percentile
 	# xmax = max(np.percentile(data_ops["kern"], 99), 
 	#     np.percentile(data_ops["ppr"], 99),
 	#     np.percentile(data_ops["sr"], 99),
@@ -73,13 +70,11 @@ if __name__ == "__main__":
 	axis = fig.add_subplot(111)
 
 	for op in data_ops:
+		# plot ops one-by-one
 		plot_cdf_data(op, data_ops[op], axis, "solid")
 
-
-	""" settings """
 	legend_label = "$\\bf{bitwidth:}$" +\
 			" " + "$\\bf{64}$"+ " " +"$\\bf{(sampling)}$"
-
 	axis.grid(b=True, which='both', color='silver')
 	axis.set_xlabel("number of cycles (min)")
 	axis.set_ylabel("probability (at or below value)")
@@ -87,6 +82,5 @@ if __name__ == "__main__":
 	axis.set_xticks(np.array([200, 300, 400, 500, 600, 700, 800, 900]))
 	axis.set_xticklabels(np.array([200, 300, 400, 500, 600, 700, 800, 900]))
 	axis.legend(title=legend_label)
-
 	# pyplot.xlim(right=xmax)
 	mp.pyplot.savefig("./perf_fig.png", dpi=300)
