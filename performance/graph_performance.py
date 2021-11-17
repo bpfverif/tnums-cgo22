@@ -55,16 +55,13 @@ if __name__ == "__main__":
 		data = np.loadtxt(f, delimiter=",", skiprows=1)
 		data_ops[op] = data
 
-	# # fix the xlimit of graph at the 99th percentile
-	# xmax = max(np.percentile(data_ops["kern"], 99), 
-	#     np.percentile(data_ops["ppr"], 99),
-	#     np.percentile(data_ops["sr"], 99),
-	#     np.percentile(data_ops["popcnt"], 99))
-	
-	# xmin = min(np.percentile(data_ops["kern"], 1), 
-	#     np.percentile(data_ops["ppr"], 1),
-	#     np.percentile(data_ops["sr"], 1),
-	#     np.percentile(data_ops["popcnt"], 1))
+	# fix the xlimit of graph at the 99th and 1st percentile
+	xmax = max(np.percentile(data_ops["kern_mul"], 99.9), 
+	    np.percentile(data_ops["bitwise_mul_opt"], 99.9),
+	    np.percentile(data_ops["our_mul"], 99.9))
+	xmin = min(np.percentile(data_ops["kern_mul"], 0.1), 
+	    np.percentile(data_ops["bitwise_mul_opt"], 0.1),
+	    np.percentile(data_ops["our_mul"], 0.1))
 
 	fig = mp.pyplot.figure(1)
 	axis = fig.add_subplot(111)
@@ -79,8 +76,9 @@ if __name__ == "__main__":
 	axis.set_xlabel("number of cycles (min)")
 	axis.set_ylabel("probability (at or below value)")
 	# axis.set_xscale('log')
-	axis.set_xticks(np.array([200, 300, 400, 500, 600, 700, 800, 900]))
-	axis.set_xticklabels(np.array([200, 300, 400, 500, 600, 700, 800, 900]))
+	# axis.set_xticks(np.array([200, 300, 400, 500, 600, 700, 800, 900]))
+	# axis.set_xticklabels(np.array([200, 300, 400, 500, 600, 700, 800, 900]))
 	axis.legend(title=legend_label)
-	# pyplot.xlim(right=xmax)
+	pyplot.xlim(right=xmax)
+	pyplot.xlim(left=xmin)
 	mp.pyplot.savefig("./perf_fig.png", dpi=300)
