@@ -16,6 +16,8 @@ u64 num_output_equal = 0;
 u64 num_output_unequal = 0;
 u64 num_kern_mul_better = 0;
 u64 num_our_mul_better = 0;
+u64 num_comparable = 0;
+u64 num_incomparable = 0;
 
 void calc_precision_helper(tnum_t t1, tnum_t t2) {
   tnum_t abs_res_1 = kern_mul(t1, t2);
@@ -32,17 +34,22 @@ void calc_precision_helper(tnum_t t1, tnum_t t2) {
 
   if (diff) {
     num_output_unequal += 1;
-    u64 num_conc_in_abs_res_1 =
-        get_number_of_concrete_values_in_tnum(abs_res_1, bitvec_width);
-    u64 num_conc_in_abs_res_2 =
-        get_number_of_concrete_values_in_tnum(abs_res_2, bitvec_width);
-
-    if (num_conc_in_abs_res_1 > num_conc_in_abs_res_2) {
-      num_our_mul_better += 1;
-    } else {
-      num_kern_mul_better += 1;
+    bool comparable = tnums_comparable(abs_res_1, abs_res_2, bitvec_width);
+    if(comparable){
+      num_comparable++;
+      u64 num_conc_in_abs_res_1 =
+          get_number_of_concrete_values_in_tnum(abs_res_1, bitvec_width);
+      u64 num_conc_in_abs_res_2 =
+          get_number_of_concrete_values_in_tnum(abs_res_2, bitvec_width);
+      if (num_conc_in_abs_res_1 > num_conc_in_abs_res_2) {
+        num_our_mul_better += 1;
+      } else {
+        num_kern_mul_better += 1;
+      }
     }
-
+    else{
+      num_incomparable++;
+    }
   } else {
     num_output_equal += 1;
   }
@@ -79,6 +86,8 @@ int main(int argc, char **argv) {
   double perc_equal = (double)num_output_equal * 100.0 / (double)num_tnum_pairs;
   double perc_unequal =
       (double)num_output_unequal * 100.0 / (double)num_tnum_pairs;
+  double perc_comparable = 
+    (double) num_comparable*100.0/(double)num_output_unequal;
   double perc_kern_mul_better =
       (double)num_kern_mul_better * 100 / (double)num_output_unequal;
   double perc_our_mul_better =
@@ -93,6 +102,8 @@ int main(int argc, char **argv) {
   std::cout << " (" << perc_equal << "%), ";
   std::cout << num_output_unequal;
   std::cout << " (" << perc_unequal << "%), ";
+  std::cout << num_comparable;
+  std::cout << " (" << perc_comparable << "%), ";
   std::cout << num_kern_mul_better;
   std::cout << " (" << perc_kern_mul_better << "%), ";
   std::cout << num_our_mul_better;
