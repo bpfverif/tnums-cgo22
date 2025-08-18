@@ -360,7 +360,6 @@ class Tnum:
 		f.append(res.value == v & ~mu)
 		f.append(res.mask == mu)
 		return And(f)
-	
 class TnumOpsVerifier:
 
 	@staticmethod
@@ -797,6 +796,7 @@ class TnumOpsVerifier:
 			print("FAILED.")
 			print(s.model())
 
+
 	@staticmethod
 	def check_tnum_union():
 		"""
@@ -844,7 +844,8 @@ if __name__ == "__main__":
 	parser.add_argument("--bitwidth", help="bitvector width", type=int, 
 		required=True)
 	parser.add_argument("--op", 
-		help="tnum operation: lshift|rshift|arshift|and|or|xor|add|sub|mul|our_mul", 
+		help="tnum operation to verify", 
+		choices=["tnum_lshift", "tnum_rshift", "tnum_arshift", "tnum_and", "tnum_or", "tnum_xor", "tnum_add", "tnum_sub", "tnum_kern_mul", "tnum_our_mul", "tnum_intersect", "tnum_union"],
 		type=str, 
 		required=True)
 
@@ -852,27 +853,27 @@ if __name__ == "__main__":
 	BITVEC_WIDTH = args.bitwidth
 
 	# shift
-	if (args.op == 'lshift'):
+	if (args.op == 'tnum_lshift'):
 		TnumOpsVerifier.check_tnum_lshift()
-	elif (args.op == 'rshift'):
+	elif (args.op == 'tnum_rshift'):
 		TnumOpsVerifier.check_tnum_rshift()
-	elif (args.op == 'arshift'):
+	elif (args.op == 'tnum_arshift'):
 		TnumOpsVerifier.check_tnum_arshift()
 	# bitwise
-	elif (args.op == 'and'):
+	elif (args.op == 'tnum_and'):
 		TnumOpsVerifier.check_tnum_and()
-	elif (args.op == 'or'):
+	elif (args.op == 'tnum_or'):
 		TnumOpsVerifier.check_tnum_or()
-	elif (args.op == 'xor'):
+	elif (args.op == 'tnum_xor'):
 		TnumOpsVerifier.check_tnum_xor()
 	# arithmetic
-	elif (args.op == 'add'):
+	elif (args.op == 'tnum_add'):
 		TnumOpsVerifier.check_tnum_add()
-	elif (args.op == 'sub'):
+	elif (args.op == 'tnum_sub'):
 		TnumOpsVerifier.check_tnum_sub()
-	elif (args.op == 'mul'):
+	elif (args.op == 'tnum_kern_mul'):
 		TnumOpsVerifier.check_tnum_kern_mul()
-	elif (args.op == 'our_mul'):
+	elif (args.op == 'tnum_our_mul'):
 		TnumOpsVerifier.check_tnum_our_mul()
 	elif (args.op == 'tnum_intersect'):
 		TnumOpsVerifier.check_tnum_intersect()
