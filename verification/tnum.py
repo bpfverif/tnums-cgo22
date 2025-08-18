@@ -350,6 +350,17 @@ class Tnum:
 		f.append(res.value == v & ~mu)
 		f.append(res.mask == mu)
 		return And(f)
+
+	@staticmethod
+	def tnum_union(a, b, res):
+		f = []
+		v, mu =  BitVecHelper.new_uniq_bitvecs(2)
+		f.append(v == a.value & b.value)
+		f.append(mu == (a.value ^ b.value) | a.mask | b.mask)
+		f.append(res.value == v & ~mu)
+		f.append(res.mask == mu)
+		return And(f)
+	
 class TnumOpsVerifier:
 
 	@staticmethod
@@ -785,6 +796,49 @@ class TnumOpsVerifier:
 		else:
 			print("FAILED.")
 			print(s.model())
+
+	@staticmethod
+	def check_tnum_union():
+		"""
+		F: (x is_in_tnum a) AND (y is_in_tnum b) 
+		-> (x) is_in_tnum (tnum_union(a, b)) AND (y) is_in_tnum (tnum_union(a, b))
+		"""
+		print("\nVerifying correctness of [tnum_union] for tnums of width [{}] ... ".format(BITVEC_WIDTH), 
+			end="", flush=True)
+
+		s = SolverFor("QF_BV")
+		a = Tnum.new_tnum_from_name('a')
+		b = Tnum.new_tnum_from_name('b')
+		res = Tnum.new_tnum_from_name('res')
+		x = BitVec('x', BITVEC_WIDTH)
+		y = BitVec('y', BITVEC_WIDTH)
+
+		f = Implies(
+				And(Tnum.is_wellformed(a), 
+					Tnum.is_wellformed(b), 
+					Tnum.is_in_tnum(x, a), 
+					Tnum.is_in_tnum(y, b),
+					Tnum.tnum_union(a, b, res)
+				), 
+				And(Tnum.is_wellformed(res), 
+					Tnum.is_in_tnum(x, res),
+					Tnum.is_in_tnum(y, res)
+			)
+		)
+
+		f = ForAll(
+				[a.value, b.value, a.mask, b.mask],  
+				ForAll([x, y], f)
+			)
+		s.add(Not(f))
+
+		if(s.check() == unsat):
+			print(" SUCCESS.")
+		else:
+			print("FAILED.")
+			print(s.model())
+
+
 if __name__ == "__main__":
 	parser = argparse.ArgumentParser()
 	parser.add_argument("--bitwidth", help="bitvector width", type=int, 
@@ -822,5 +876,7 @@ if __name__ == "__main__":
 		TnumOpsVerifier.check_tnum_our_mul()
 	elif (args.op == 'tnum_intersect'):
 		TnumOpsVerifier.check_tnum_intersect()
+	elif (args.op == 'tnum_union'):
+		TnumOpsVerifier.check_tnum_union()
 	else:
 		parser.print_help()
