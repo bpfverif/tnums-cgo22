@@ -1,12 +1,13 @@
 from z3 import *
 import sys
 import argparse
+from pprint import pprint
 
 BITVEC_WIDTH = 64
 
 class BitVecHelper:
 
-	uniq_id = 0
+	uniq_id = -1
 
 	@staticmethod
 	def new_uniq_bitvec():
@@ -23,7 +24,7 @@ class BitVecHelper:
 
 class Tnum:
 
-	uniq_id = 0
+	uniq_id = -1
 
 	def __init__(self, v, m):
 		self.value = v
@@ -274,6 +275,58 @@ class Tnum:
 		f.append(res.mask == res_acc_2.mask)
 		return And(f)
 
+	@staticmethod
+	def tnum_new_mul(tnum_a, tnum_b, tnum_c):
+		num_iterations = BITVEC_WIDTH + 1
+		curr_acc		= [Tnum.new_uniq_tnum() for _ in range(0, num_iterations)]
+		curr_a	   = [Tnum.new_uniq_tnum() for _ in range(0, num_iterations)]
+		curr_b	   = [Tnum.new_uniq_tnum() for _ in range(0, num_iterations)]
+		formulas = []
+		formulas = [
+			curr_acc[0].value == BitVecVal(0, BITVEC_WIDTH),
+			curr_acc[0].mask  == BitVecVal(0, BITVEC_WIDTH),
+			curr_a[0].value == tnum_a.value,
+			curr_a[0].mask  == tnum_a.mask,
+			curr_b[0].value == tnum_b.value,
+			curr_b[0].mask  == tnum_b.mask
+		]
+
+		for i in range(1, num_iterations):
+			lsb_a_certain = (curr_a[i-1].mask & BitVecVal(1, BITVEC_WIDTH) == 
+				BitVecVal(0, BITVEC_WIDTH))
+			lsb_a_certain_1 = And(lsb_a_certain, curr_a[i-1].value & BitVecVal(1, BITVEC_WIDTH) == BitVecVal(1, BITVEC_WIDTH))
+			lsb_a_certain_0 = And(lsb_a_certain, curr_a[i-1].value & BitVecVal(1, BITVEC_WIDTH) == BitVecVal(0, BITVEC_WIDTH))
+			lsb_a_uncertain = (curr_a[i-1].mask & BitVecVal(1, BITVEC_WIDTH) == 
+				BitVecVal(1, BITVEC_WIDTH))
+
+			acc_0 = Tnum.new_uniq_tnum()
+			acc_1 = Tnum.new_uniq_tnum()
+
+			lsb_a_certain_0_implies = Implies(lsb_a_certain_0, 
+						Tnum.tnum_equals(curr_acc[i-1], curr_acc[i])
+						)
+			lsb_a_certain_1_implies = Implies(lsb_a_certain_1, 
+						Tnum.tnum_add(curr_acc[i-1], curr_b[i-1], curr_acc[i])
+						)
+			lsb_a_uncertain_implies = Implies(lsb_a_uncertain, 
+						And(
+							Tnum.tnum_equals(curr_acc[i-1], acc_0),
+							Tnum.tnum_add(curr_acc[i-1], curr_b[i-1], acc_1),
+							Tnum.tnum_union(acc_0, acc_1, curr_acc[i])
+							)
+						)
+			update_a = Tnum.tnum_rshift(curr_a[i-1], BitVecVal(1, BITVEC_WIDTH), curr_a[i])
+			update_b = Tnum.tnum_lshift(curr_b[i-1], BitVecVal(1, BITVEC_WIDTH), curr_b[i])
+
+			formulas.append(lsb_a_certain_0_implies)
+			formulas.append(lsb_a_certain_1_implies)
+			formulas.append(lsb_a_uncertain_implies)
+			formulas.append(update_a)
+			formulas.append(update_b)
+
+		update_res = Tnum.tnum_equals(curr_acc[num_iterations -1], tnum_c)
+		formulas.append(update_res)
+		return And(formulas)
 
 	@staticmethod
 	def tnum_our_mul(tnum_a, tnum_b, tnum_c):
@@ -714,6 +767,47 @@ class TnumOpsVerifier:
 			print(s.model())
 
 	@staticmethod
+	def check_tnum_new_mul():
+		"""
+		F: (x is_in_tnum a) AND (y is_in_tnum b) 
+		-> (x * y) is_in_tnum (tnum_mul(a, b))
+		"""
+		print("\nVerifying correctness of [tnum_new_mul] for tnums of width [{}] ... ".format(BITVEC_WIDTH), 
+			end="", flush=True)
+		print()
+		
+		s = SolverFor("QF_BV")
+		a = Tnum.new_tnum_from_name('a')
+		b = Tnum.new_tnum_from_name('b')
+		res = Tnum.new_tnum_from_name('res')
+		x = BitVec('x', BITVEC_WIDTH)
+		y = BitVec('y', BITVEC_WIDTH)
+
+		f = Implies(
+				And(Tnum.is_wellformed(a), 
+					Tnum.is_wellformed(b), 
+					Tnum.is_in_tnum(x, a), 
+					Tnum.is_in_tnum(y, b),
+					Tnum.tnum_new_mul(a, b, res)
+				), 
+				And(Tnum.is_wellformed(res), 
+					Tnum.is_in_tnum(x * y, res)
+			)
+		)
+
+		f = ForAll(
+				[a.value, b.value, a.mask, b.mask],  
+				ForAll([x, y], f)
+			)
+		s.add(Not(f))
+		
+		if(s.check() == unsat):
+			print(" SUCCESS.")
+		else:
+			print("FAILED.")
+			print(s.model())
+
+	@staticmethod
 	def check_tnum_our_mul():
 		"""
 		F: (x is_in_tnum a) AND (y is_in_tnum b) 
@@ -845,7 +939,7 @@ if __name__ == "__main__":
 		required=True)
 	parser.add_argument("--op", 
 		help="tnum operation to verify", 
-		choices=["tnum_lshift", "tnum_rshift", "tnum_arshift", "tnum_and", "tnum_or", "tnum_xor", "tnum_add", "tnum_sub", "tnum_kern_mul", "tnum_our_mul", "tnum_intersect", "tnum_union"],
+		choices=["tnum_lshift", "tnum_rshift", "tnum_arshift", "tnum_and", "tnum_or", "tnum_xor", "tnum_add", "tnum_sub", "tnum_kern_mul", "tnum_new_mul", "tnum_our_mul", "tnum_intersect", "tnum_union"],
 		type=str, 
 		required=True)
 
@@ -873,6 +967,8 @@ if __name__ == "__main__":
 		TnumOpsVerifier.check_tnum_sub()
 	elif (args.op == 'tnum_kern_mul'):
 		TnumOpsVerifier.check_tnum_kern_mul()
+	elif (args.op == 'tnum_new_mul'):
+		TnumOpsVerifier.check_tnum_new_mul()
 	elif (args.op == 'tnum_our_mul'):
 		TnumOpsVerifier.check_tnum_our_mul()
 	elif (args.op == 'tnum_intersect'):
